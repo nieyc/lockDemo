@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring}" />
+
+	<!--按天生成日志 -->
+	<appender name="TIME_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
+		</encoder>
+		<file>${LOG_FILE}</file>
+		<Prudent>true</Prudent>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.log</FileNamePattern>
+			<maxHistory>365</maxHistory>
+		</rollingPolicy>
+	</appender>
+
+	<root level="ERROR">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="TIME_FILE" />
+	</root>
+</configuration>

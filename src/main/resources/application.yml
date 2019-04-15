@@ -1,0 +1,56 @@
+server:
+  port: 8084
+
+#系统健康检查，具体见postman中spring-boot实例
+management: 
+  server.port: 9002
+  endpoints.web.base-path: /monitor
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always
+  endpoint.shutdown.enabled: true #远程关闭，生产环境不应该配置
+
+spring:  
+  datasource:
+    url: jdbc:mysql://172.16.2.142:3306/test?useSSL=false&useUnicode=true&amp;characterEncoding=UTF-8
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    maxActive: 100
+    maxIdle: 50
+    minIdle: 10
+    initialSize: 10
+    maxWait: 100
+    connectionTimeout: 500
+    testWhileIdle: true
+    validationQuery: SELECT 1 FROM DUAL
+    validationQueryTimeout: 100
+    
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    password:  
+    pool.max-active: 8
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 5000
+   
+   
+mybatis:
+  configuration.jdbcTypeForNull: 'NULL'
+  mapperLocations: classpath:mapper/**/*Mapper.xml
+ 
+#定义一些常量
+com.github.nyc.url: www.baidu.com
+com.github.nyc.name: nieyc
+spring.application.name: bootDemo
+
+
+#日志
+logging:
+  file: ./logs/spring-boot
+  level:
+   com.github.nyc.bootDemo: DEBUG
+   org.springframework.web: INFO
+   org.springframework.boot: INFO

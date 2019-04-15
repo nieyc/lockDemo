@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+	 "-//mybatis.org//DTD Mapper 3.0//EN"  
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="com.github.nyc.bootDemo.student.dao.StudentDao"> 
+
+	<resultMap type="com.github.nyc.bootDemo.student.domain.Student" id="studentMap">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="score" column="score" />
+		<result property="score" column="score" />
+	</resultMap>
+	
+	<select id="getStudentList" resultMap="studentMap">
+		SELECT * FROM student
+	</select>
+
+	<select id="getStudentById" resultMap="studentMap">
+		SELECT * FROM student WHERE id = #{id}
+	</select>
+	
+	<select id="getByIdWithPessimisticLock" resultMap="studentMap">
+		select * from student where id = #{id} for update
+	</select>
+	
+	
+	<update id="updateScore" parameterType="com.github.nyc.bootDemo.student.domain.Student">
+	   update student set score=score-10 where id=#{id}
+	</update>
+	
+	<update id="updateScoreByVersion" parameterType="com.github.nyc.bootDemo.student.domain.Student">
+	   update student set score=score-10,version=version+1 where id=#{id} and version=#{version} 
+	</update>
+
+</mapper>
