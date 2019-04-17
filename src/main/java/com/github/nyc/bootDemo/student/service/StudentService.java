@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.nyc.bootDemo.student.dao.StudentDao;
 import com.github.nyc.bootDemo.student.domain.Student;
+import com.github.nyc.bootDemo.util.DistributedLock;
 
 @Service
 public class StudentService {
 	 Lock lock=new ReentrantLock();
+	 
+	 DistributedLock dlock=new DistributedLock("zktest");
 	 @Resource
 	 private StudentDao studentDao;
 	 
@@ -105,6 +108,28 @@ public class StudentService {
 		 }else {
 		     System.out.println("score is less than 10");
 		 }
+	 }
+	 
+	 /**
+	  * <p>基于zookeeper的分布式锁 </p>  
+	  * @param student
+	  * @author nieyc 
+	  * @date 2019年4月17日
+	  */
+	 public void testZkLock(Student student) {
+		 dlock.acquireLock();
+		 try {
+			 student=studentDao.getStudentById(student.getId());
+			 if(student.getScore()>=10) {
+				  studentDao.updateScore(student); 
+			 }else {
+			     System.out.println("score is less than 10");
+			 }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			dlock.releaseLock();
+		}
 	 }
 	 
 	 

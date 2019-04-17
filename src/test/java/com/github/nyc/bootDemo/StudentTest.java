@@ -42,7 +42,8 @@ public class StudentTest {
 					student.setId(2);
 					//studentService.updateScore(student);
 					//studentService.testOptimisticLockScore(student);
-					studentService.testPessimisticLock(student);
+					//studentService.testPessimisticLock(student);
+					studentService.testZkLock(student);
 				}
 			});
 		}

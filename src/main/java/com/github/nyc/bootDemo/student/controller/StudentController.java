@@ -58,4 +58,13 @@ public class StudentController {
         student=studentService.getStudentById(2);
         return student;
     }
+	
+	@RequestMapping("/updateZkScore")
+    public Student updateZkScore() {
+	    Student student=new Student();
+	    student.setId(2);
+        studentService.testZkLock(student);
+        student=studentService.getStudentById(2);
+        return student;
+    }
 }
