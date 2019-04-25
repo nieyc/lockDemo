@@ -8,6 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 
+* <p>Title: DistributedLock.java</p>  
+* <p>Description: 基于zookeeper 封装后的工具curator实现</p>  
+* <p>Copyright: Copyright (c) 2019</p>  
+* <p>Company: cssweb.sh.cn</p>  
+* @author nieyc  
+* @date 2019年4月25日  
+* @version 1.0
+ */
 public class DistributedLock {
 	
 	    public static Logger log = LoggerFactory.getLogger(DistributedLock.class);
@@ -22,10 +32,10 @@ public class DistributedLock {
 	        log.info("zk.curator start success");
 	    }
 	 
-	    /**
-	           * 实例化
-	     * @param lockName
-	     */
+		/**
+		 * * 实例化
+		 * @param lockName
+		 */
 	    public DistributedLock(String lockName){
 	        try {
 	            this.lockName = lockName;
@@ -36,7 +46,9 @@ public class DistributedLock {
 	    }
 	 
 	    /**
-	     * 获取锁
+	     * <p>获取锁 </p>  
+	     * @author nieyc 
+	     * @date 2019年4月25日
 	     */
 	    public void acquireLock(){
 	        int flag = 0;
@@ -58,8 +70,11 @@ public class DistributedLock {
 	         }
 	    }
 	 
+	  
 	    /**
-	          * 释放锁
+	     * <p>释放锁 </p>  
+	     * @author nieyc 
+	     * @date 2019年4月25日
 	     */
 	    public void releaseLock(){
 	        try {
@@ -72,23 +87,5 @@ public class DistributedLock {
 	            log.info("Thread:"+Thread.currentThread().getId()+" release distributed lock  exception="+e);
 	        }
 	    }
-	    
-	   public static void doSomething() throws InterruptedException {
-				Thread.sleep(100);
-				System.out.println("just a test");
-	    }
-	    
-	    
-	    public static void main(String[] args) {
-	    	DistributedLock lock=new DistributedLock("nieyc");
-	    	lock.acquireLock();
-	    	try {
-	    		doSomething();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally {
-				lock.releaseLock();
-			}
-		}
 
 }

@@ -9,6 +9,9 @@ java -jar lockDemo-0.0.1-SNAPSHOT.jar
    基于数据库-悲观锁
    基于数据库-乐观锁
    基于zookeeper实现
+   基于redis实现
+   官网：https://redis.io/topics/distlock
+ redission:https://redisson.org/
  
 
 

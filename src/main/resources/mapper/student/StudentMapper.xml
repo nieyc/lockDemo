@@ -25,11 +25,11 @@
 	
 	
 	<update id="updateScore" parameterType="com.github.nyc.bootDemo.student.domain.Student">
-	   update student set score=score-10 where id=#{id}
+	   update student set score=score-1 where id=#{id}
 	</update>
 	
 	<update id="updateScoreByVersion" parameterType="com.github.nyc.bootDemo.student.domain.Student">
-	   update student set score=score-10,version=version+1 where id=#{id} and version=#{version} 
+	   update student set score=score-1,version=version+1 where id=#{id} and version=#{version} 
 	</update>
 
 </mapper>

@@ -1,20 +1,38 @@
 package com.github.nyc.bootDemo.student.service;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Resource;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.nyc.bootDemo.student.controller.RedissonLockTestApi;
 import com.github.nyc.bootDemo.student.dao.StudentDao;
 import com.github.nyc.bootDemo.student.domain.Student;
+import com.github.nyc.bootDemo.support.AcquiredLockWorker;
 import com.github.nyc.bootDemo.util.DistributedLock;
+import com.github.nyc.bootDemo.util.RedisLocker;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class StudentService {
 	 Lock lock=new ReentrantLock();
 	 
 	 DistributedLock dlock=new DistributedLock("zktest");
+	 
+	 @Autowired
+	 RedisLocker distributedLocker;
+	 
+	 @Autowired
+	 RedissonClient redissonClient;
+	 
 	 @Resource
 	 private StudentDao studentDao;
 	 
@@ -28,10 +46,10 @@ public class StudentService {
 	 @Transactional(rollbackFor = RuntimeException.class)
 	 public  void updateScore(Student student) {
 			 student=studentDao.getStudentById(student.getId());
-			 if(student.getScore()>=10) {
+			 if(student.getScore()>0) {
 				 studentDao.updateScore(student);
 			 }else {
-				System.out.println("score is less than 10");
+				System.out.println("score is less than 0");
 			 }
 	 }
 	 
@@ -44,7 +62,7 @@ public class StudentService {
 	 public  void testSyncLockUpdateScore(Student student) {
 		 synchronized (this) {
 			 student=studentDao.getStudentById(student.getId());
-			 if(student.getScore()>=10) {
+			 if(student.getScore()>0) {
 				 studentDao.updateScore(student);
 			 }else {
 				System.out.println("score is less than 10");
@@ -62,7 +80,7 @@ public class StudentService {
 	 public  void testLockScore(Student student) {
 		     lock.lock();
 			 student=studentDao.getStudentById(student.getId());
-			 if(student.getScore()>=10) {
+			 if(student.getScore()>0) {
 				 studentDao.updateScore(student);
 			 }else {
 				System.out.println("score is less than 10");
@@ -80,7 +98,7 @@ public class StudentService {
 	 public  int testOptimisticLockScore(Student student) {
 		 student=studentDao.getStudentById(student.getId());
 		 int i=0;
-		 if(student.getScore()>=10) {
+		 if(student.getScore()>0) {
 			 i=studentDao.updateScoreByVersion(student);
 			 if(i==0) {
 				 System.out.println("更新记录失败。。。。。。。。。。。。。。。。。。。。。。。。。。。:"+i);
@@ -103,7 +121,7 @@ public class StudentService {
 	 @Transactional(rollbackFor = RuntimeException.class)
 	 public void testPessimisticLock(Student student) {
 		 student=studentDao.getByIdWithPessimisticLock(student.getId());
-		 if(student.getScore()>=10) {
+		 if(student.getScore()>0) {
 			  studentDao.updateScore(student); 
 		 }else {
 		     System.out.println("score is less than 10");
@@ -120,7 +138,7 @@ public class StudentService {
 		 dlock.acquireLock();
 		 try {
 			 student=studentDao.getStudentById(student.getId());
-			 if(student.getScore()>=10) {
+			 if(student.getScore()>0) {
 				  studentDao.updateScore(student); 
 			 }else {
 			     System.out.println("score is less than 10");
@@ -131,6 +149,53 @@ public class StudentService {
 			dlock.releaseLock();
 		}
 	 }
+	 
+	 
+	 public void testRedisLock(Student student) {
+		 try {
+			distributedLocker.lock("test", new AcquiredLockWorker<Object>() {
+			       @Override
+			       public Object invokeAfterLockAcquire() {
+			    	   Student student1=studentDao.getStudentById(student.getId());
+			  		 if(student1.getScore()>0) {
+			  			  studentDao.updateScore(student1); 
+			  		 }else {
+			  			log.info("score is less than 0");
+			  		 }
+			  		  return "success";
+			       }
+			 });
+		} catch (Exception e) {
+			log.error("lock fail");
+		}
+	 }
+	 
+	 
+	  public void testSimpleRedisLock(Student student) {
+		 RLock lock = redissonClient.getLock("student");
+		 try{
+		    // 1. 最常见的使用方法
+		    //lock.lock();
+		    // 2. 支持过期解锁功能,10秒钟以后自动解锁, 无需调用unlock方法手动解锁
+		    //lock.lock(10, TimeUnit.SECONDS);
+		    // 3. 尝试加锁，最多等待2秒，上锁以后10秒自动解锁
+		    boolean res = lock.tryLock(2, 10, TimeUnit.SECONDS);
+		    if(res){ //成功
+		    	 student=studentDao.getStudentById(student.getId());
+		  		 if(student.getScore()>0) {
+		  			  studentDao.updateScore(student); 
+		  		 }else {
+		  			log.info("score is less than 0");
+		  		 }
+		    }
+		 }catch (InterruptedException e) {
+			    log.error(e.getMessage());
+			}finally {
+			    //释放锁
+			   lock.unlock();
+		}
+       }
+	 
 	 
 	 
 	 public Student getStudentById(Integer id) {
